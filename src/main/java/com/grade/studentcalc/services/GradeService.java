@@ -1,5 +1,6 @@
 package com.grade.studentcalc.services;
 
+import com.grade.studentcalc.entity.Grade;
 import com.grade.studentcalc.entity.Student;
 import com.grade.studentcalc.repository.StudentRepository;
 import jakarta.transaction.Transactional;
@@ -19,10 +20,18 @@ public class GradeService {
     private PasswordEncoder passwordEncoder;
 
     public String addStudent(Student student) {
+        if (student.getGrades() != null) {
+            for (Grade grade : student.getGrades()) {
+                grade.setStudent(student);
+            }
+        }
+
         student.setPassword(passwordEncoder.encode(student.getPassword()));
+
         studentRepository.save(student);
         return "Student added";
     }
+
 
     public Student getStudentById(String studentId) {
         return studentRepository.findById(studentId).orElse(null);
