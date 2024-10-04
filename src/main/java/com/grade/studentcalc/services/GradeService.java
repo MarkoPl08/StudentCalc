@@ -1,77 +1,60 @@
 package com.grade.studentcalc.services;
 
-import com.grade.studentcalc.entity.Grade;
 import com.grade.studentcalc.entity.Student;
-import com.grade.studentcalc.repository.GradeRepository;
+import com.grade.studentcalc.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 @Service
 public class GradeService {
 
     @Autowired
-    private GradeRepository gradeRepository;
+    private StudentRepository studentRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public String addStudent(Student student) {
-        try {
-            return gradeRepository.addStudent(student);
-        } catch (ExecutionException | InterruptedException e) {
-            return "Error adding student";
-        }
+        student.setPassword(passwordEncoder.encode(student.getPassword()));
+        studentRepository.save(student);
+        return "Student added";
     }
 
     public Student getStudentById(String studentId) {
-        try {
-            return gradeRepository.getStudentById(studentId);
-        } catch (ExecutionException | InterruptedException e) {
-            return null;
-        }
+        return studentRepository.findById(studentId).orElse(null);
     }
 
-    public String updateStudent(String studentId, Map<String, Object> updates) {
-        try {
-            return gradeRepository.updateStudent(studentId, updates);
-        } catch (ExecutionException | InterruptedException e) {
-            return "Error updating student";
-        }
+    public void updateStudent(Student student) {
+        studentRepository.save(student);
     }
 
-    public String deleteStudent(String studentId) {
-        try {
-            return gradeRepository.deleteStudent(studentId);
-        } catch (ExecutionException | InterruptedException e) {
-            return "Error deleting student";
-        }
+    public void deleteStudent(String studentId) {
+        studentRepository.deleteById(studentId);
     }
 
     public List<Student> getAllStudents() {
-        try {
-            return gradeRepository.getAllStudents();
-        } catch (ExecutionException | InterruptedException e) {
-            return null;
-        }
+        return studentRepository.findAll();
     }
 
-    public double calculateFinalGrade(String studentId) throws ExecutionException, InterruptedException {
-        Student student = gradeRepository.getStudentById(studentId);
+    public double calculateFinalGrade(String studentId) {
+        Student student = getStudentById(studentId);
         if (student == null || student.getGrades().isEmpty()) {
             return 0.0;
         }
-        double total = student.getGrades().stream().mapToDouble(Grade::getGrade).sum();
+        double total = student.getGrades().stream().mapToDouble(grade -> grade.getGrade()).sum();
         return total / student.getGrades().size();
     }
 
-    public double calculateGPA(String studentId) throws ExecutionException, InterruptedException {
-        Student student = gradeRepository.getStudentById(studentId);
+    public double calculateGPA(String studentId) {
+        Student student = getStudentById(studentId);
         if (student == null || student.getGrades().isEmpty()) {
             return 0.0;
         }
         double totalGPA = 0.0;
-        for (Grade grade : student.getGrades()) {
+        for (var grade : student.getGrades()) {
             totalGPA += convertGradeToGPA(grade.getGrade());
         }
         return totalGPA / student.getGrades().size();
@@ -85,7 +68,7 @@ public class GradeService {
         return 0.0;
     }
 
-    public String checkProgress(String studentId, double targetGPA) throws ExecutionException, InterruptedException {
+    public String checkProgress(String studentId, double targetGPA) {
         double currentGPA = calculateGPA(studentId);
         if (currentGPA >= targetGPA) {
             return "You are on track!";
@@ -93,5 +76,4 @@ public class GradeService {
             return "You need to improve your GPA to meet your academic goals.";
         }
     }
-
 }

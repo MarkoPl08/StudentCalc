@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/students")
@@ -18,6 +16,11 @@ public class GradeController {
 
     @PostMapping
     public String addStudent(@RequestBody Student student) {
+        return gradeService.addStudent(student);
+    }
+
+    @PostMapping("/register")
+    public String registerStudent(@RequestBody Student student) {
         return gradeService.addStudent(student);
     }
 
@@ -32,27 +35,27 @@ public class GradeController {
     }
 
     @PutMapping("/{studentId}")
-    public String updateStudent(@PathVariable String studentId, @RequestBody Map<String, Object> updates) {
-        return gradeService.updateStudent(studentId, updates);
+    public void updateStudent(@PathVariable String studentId, @RequestBody Student student) {
+        gradeService.updateStudent(student);
     }
 
     @DeleteMapping("/{studentId}")
-    public String deleteStudent(@PathVariable String studentId) {
-        return gradeService.deleteStudent(studentId);
+    public void deleteStudent(@PathVariable String studentId) {
+        gradeService.deleteStudent(studentId);
     }
 
     @GetMapping("/{studentId}/final-grade")
-    public double getFinalGrade(@PathVariable String studentId) throws ExecutionException, InterruptedException {
+    public double getFinalGrade(@PathVariable String studentId) {
         return gradeService.calculateFinalGrade(studentId);
     }
 
     @GetMapping("/{studentId}/gpa")
-    public double getGPA(@PathVariable String studentId) throws ExecutionException, InterruptedException {
+    public double getGPA(@PathVariable String studentId) {
         return gradeService.calculateGPA(studentId);
     }
 
     @GetMapping("/{studentId}/progress")
-    public String checkProgress(@PathVariable String studentId, @RequestParam double targetGPA) throws ExecutionException, InterruptedException {
+    public String checkProgress(@PathVariable String studentId, @RequestParam double targetGPA) {
         return gradeService.checkProgress(studentId, targetGPA);
     }
 }
