@@ -2,6 +2,7 @@ package com.grade.studentcalc.services;
 
 import com.grade.studentcalc.entity.Student;
 import com.grade.studentcalc.repository.StudentRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,15 +49,26 @@ public class GradeService {
         return total / student.getGrades().size();
     }
 
+    @Transactional
+    public void recalculateAllGpas() {
+        List<Student> students = studentRepository.findAll();
+        for (Student student : students) {
+            double newGpa = calculateGPA(student.getStudentId());
+            student.setGpa(newGpa);
+            studentRepository.save(student);
+        }
+    }
+
     public double calculateGPA(String studentId) {
         Student student = getStudentById(studentId);
         if (student == null || student.getGrades().isEmpty()) {
             return 0.0;
         }
-        double totalGPA = 0.0;
-        for (var grade : student.getGrades()) {
-            totalGPA += convertGradeToGPA(grade.getGrade());
-        }
+
+        double totalGPA = student.getGrades().stream()
+                .mapToDouble(grade -> convertGradeToGPA(grade.getGrade()))
+                .sum();
+
         return totalGPA / student.getGrades().size();
     }
 

@@ -26,7 +26,10 @@ public class Student {
     @Column
     private String refreshToken;
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Column(nullable = true)
+    private double gpa;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Grade> grades;
 
     public String getStudentId() {
@@ -75,6 +78,14 @@ public class Student {
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public double getGpa() {
+        return gpa;
+    }
+
+    public void setGpa(double gpa) {
+        this.gpa = gpa;
     }
 
     public List<Grade> getGrades() {
